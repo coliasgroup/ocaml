@@ -82,6 +82,7 @@ CAMLDEP=$(CAMLRUN) boot/ocamlc -depend
 DEPFLAGS=$(INCLUDES)
 
 OCAMLDOC_OPT=$(WITH_OCAMLDOC:=.opt)
+OCAMLTEST_OPT=$(WITH_OCAMLTEST:=.opt)
 
 UTILS=utils/config.cmo utils/misc.cmo \
   utils/identifiable.cmo utils/numbers.cmo utils/arg_helper.cmo \
@@ -475,11 +476,11 @@ opt.opt:
 	$(MAKE) ocaml
 	$(MAKE) opt-core
 	$(MAKE) ocamlc.opt
-	$(MAKE) otherlibraries $(WITH_DEBUGGER) $(WITH_OCAMLDOC) ocamltest
+	$(MAKE) otherlibraries $(WITH_DEBUGGER) $(WITH_OCAMLDOC) $(WITH_OCAMLTEST)
 	$(MAKE) ocamlopt.opt
 	$(MAKE) otherlibrariesopt
 	$(MAKE) ocamllex.opt ocamltoolsopt ocamltoolsopt.opt $(OCAMLDOC_OPT) \
-	  ocamltest.opt
+	  $(OCAMLTEST_OPT)
 
 # Core bootstrapping cycle
 .PHONY: coreboot
@@ -509,7 +510,7 @@ coreboot:
 all: runtime
 	$(MAKE) coreall
 	$(MAKE) ocaml
-	$(MAKE) otherlibraries $(WITH_DEBUGGER) $(WITH_OCAMLDOC) ocamltest
+	$(MAKE) otherlibraries $(WITH_DEBUGGER) $(WITH_OCAMLDOC) $(WITH_OCAMLTEST)
 
 # Bootstrap and rebuild the whole system.
 # The compilation of ocaml will fail if the runtime has changed.
@@ -1116,7 +1117,9 @@ partialclean::
 # Check that the stack limit is reasonable (Unix-only)
 .PHONY: checkstack
 checkstack:
-ifeq "$(UNIX_OR_WIN32)" "unix"
+ifeq "$(CROSS_COMPILER)" "true"
+	@
+else ifeq "$(UNIX_OR_WIN32)" "unix"
 	if $(MKEXE) $(OUTPUTEXE)tools/checkstack$(EXE) tools/checkstack.c; \
 	  then tools/checkstack$(EXE); \
 	fi
